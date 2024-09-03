@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+    class Lancamento {
+        constructor(categoria, tipo, valor) {
+            if (tipo !== "receita" && tipo !== "despesa") {
+                throw new Error("Lançamento inválido: tipo diferente de receita ou despesa");
+            }
+            if (valor < 0) {
+                throw new Error("Lançamento inválido: valor menor do que 0");
+            }
+            if (categoria === "") {
+                throw new Error("Lançamento inválido: a categoria é obrigatória");
+            }
+            this.categoria = categoria;
+            this.tipo = tipo;
+            this.valor = valor;
+
+        }
+    }
+    class mes {
+        constructor(nomeDoMes, saldoIncial) {
+            if (nomeDoMes === "") { throw new Error("Lançamento inválido: Nome do mês é obrigatório") }
+            this.nomeDoMes = nomeDoMes;
+            this.saldoIncial = saldoIncial;
+            this.totalizadorDoMes = { saldo: 0, saldoInicial: 0, juros: 0, rendimentos: 0, receitas: 0, despesas: 0, distribuicaoDeDespesas: [] };
+            this.lancamentos = [];
+        }
+        adicionarLancamento(lancamento) {
+            this.lancamentos.push(lancamento);
+        }
+        calcularSaldo() {
+            this.totalizadorDoMes.saldo = this.saldoInicial;
+            for (const lancamento of this.lancamentos) {
+                if (lancamento.tipo === "receita") {
+                    this.totalizadorDoMes.saldo += lancamento.valor;
+                    this.totalizadorDoMes.receitas += lancamento.valor;
+                }
+                if (lancamento.tipo === "despesa") {
+                    this.totalizadorDoMes.saldo -= lancamento.valor;
+                    this.totalizadorDoMes.despesas += lancamento.valor;
+                }
+            }
+            this.totalizadorDoMes.distribuicaoDeDespesas = distriuirDespesas(this.lancamentos, this.totalizadorDoMes.despesas);
+
+            const estaNegativo = this.totalizadorDoMes.saldo < 0;
+            if (estaNegativo) {
+                this.totalizadorDoMes.juros = calcularJuros(this.totalizadorDoMes.saldo);
+                this.totalizadorDoMes.saldo = arredondar(this.totalizadorDoMes.saldo + this.totalizadorDoMes.juros);
+
+            } else {
+                this.totalizadorDoMes.rendimentos = calcularRendimentos(this.totalizadorDoMes.saldo);
+                this.totalizadorDoMes.saldo = arredondar(this.totalizadorDoMes.saldo + this.totalizadorDoMes.rendimentos);
+            }
+        }
+    }
+
+    function arredondar(valor) {
+        result = Math.round(valor * 100) / 100;
+        return result;
+    }
+    function calcularJuros(saldo) {
+        const juros = saldo * 0.1;
+        return juros;
+    }
+
+    function calcularRendimentos(valor) {
+        const rendimentos = valor * 0.005;
+        return rendimentos;
+    }
+
+    function distriuirDespesas(lancamentos, total) {
+        const distribuicaoDeDespesas = [];
+        for (lancamento of lancamentos) {
+            if (lancamento.tipo === "despesa") {
+                const percentual = arredondar((lancamento.valor / total) * 100);
+                distribuicaoDeDespesas.push({ categoria: lancamento.categoria, percentual });
+            }
+
+        }
+        return distribuicaoDeDespesas;
+    }
+
+
+    const saldoIncial = 0;
+    const janeiro = new mes("janeiro", saldoIncial);
+    janeiro.adicionarLancamento(new Lancamento("Salário", "receita", 3000));
+    janeiro.adicionarLancamento(new Lancamento("Aluguel", "despesa", 1000));
+    janeiro.adicionarLancamento(new Lancamento("Conta de água", "despesa", 200));
+    janeiro.adicionarLancamento(new Lancamento("Conta de Luz", "despesa", 100));
+    janeiro.adicionarLancamento(new Lancamento("Internet", "despesa", 100));
+    janeiro.adicionarLancamento(new Lancamento("Transporte", "despesa", 300));
+    janeiro.adicionarLancamento(new Lancamento("Lazer", "despesa", 300));
+    janeiro.adicionarLancamento(new Lancamento("Alimentação", "despesa", 500));
+    janeiro.adicionarLancamento(new Lancamento("Condomínio", "despesa", 300));
+    janeiro.adicionarLancamento(new Lancamento("Farmácia", "despesa", 100));
+    janeiro.calcularSaldo();
+    console.log(janeiro);
+    //console.log(totalizadorDoMes1);
+
+    // const lancamentoFevereiro = [
+    //     new Lancamento("Salário", "receita", 3000),
+    //    new Lancamento("Aluguel", "despesa", 1200),
+    //    new Lancamento("Conta de água", "despesa", 250),
+    //    new Lancamento("Conta de Luz", "despesa", 100),
+    //    new Lancamento("Internet", "despesa", 100),
+    //    new Lancamento("Transporte", "despesa", 500),
+    //    new Lancamento("Alimentação", "despesa", 1000),
+    //    new Lancamento("Condomínio", "despesa", 400)
+    //];
+    //const totalizadorDoMes2 = calcularSaldo("Fevereiro", totalizadorDoMes1.saldo, lancamentoFevereiro);
+    //console.log(totalizadorDoMes2);
+    //const acumuladoDoAno = totalizadorDoMes2;
+    //console.log("Acumulado do ano: " + acumuladoDoAno);
+
+    //teste
+    //console.log(totalizadorDoMes1.saldo === 100.5);
+    //console.log(totalizadorDoMes2.saldo === -494.45);
+</script>
+
+</html>
